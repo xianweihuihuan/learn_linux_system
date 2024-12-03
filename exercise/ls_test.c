@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
     else
     {
         extern int optopt;
-        char **filename = (char **)calloc(_PC_PATH_MAX+1, 100);
+        char **filename = (char **)calloc(_PC_PATH_MAX + 1, 100);
         long filecount = 0;
         extern int mode[200];
         int tmp;
@@ -37,10 +37,10 @@ int main(int argc, char *argv[])
         {
             if (argv[tmp][0] != '-')
             {
-                //if(argv[tmp][0]!='/'){
-                //    realpath(argv[tmp],filename[filecount]);
-                //}else{
-                filename[filecount] = argv[tmp];  
+                // if(argv[tmp][0]!='/'){
+                //     realpath(argv[tmp],filename[filecount]);
+                // }else{
+                filename[filecount] = argv[tmp];
                 //}
                 filecount++;
             }
@@ -50,124 +50,15 @@ int main(int argc, char *argv[])
         {
             for (int i = 0; i < filecount; i++)
             {
-                DIR *dir;
-                chdir(filename[i]);
-                char tmpd[100];
-                char *tmptmp = getcwd(tmpd, 100);
-                dir = opendir(tmpd);               
                 printf("%s:\n", filename[i]);
-                struct fm *name = (struct fm *)malloc(10 * sizeof(struct fm));
-                int sz = 10;
-                int count = 0;
-                struct dirent *rnm;
-                while ((rnm = readdir(dir)) != NULL)
-                {
-                    if (count == sz)
-                    {
-                        int newn = 2 * sz;
-                        name = (struct fm *)realloc(name, newn * sizeof(struct fm));
-                        sz = newn;
-                    }
-                    name[count].file = *rnm;
-                    stat(rnm->d_name, &name[count].stat);
-                    count++;
-                }
-                if (mode['R'] == 0)
-                {
-                    if (mode['t'] != 0)
-                    {
-                        qsort(name, count, sizeof(struct fm), &sort_time);
-                    }
-                    else
-                    {
-                        qsort(name, count, sizeof(struct fm), &sort1);
-                    }
-                    if (mode['l'] == 0)
-                    {
-                        ls_normal(name, count);
-                    }
-                    else
-                    {
-                        ls_l(name, count);
-                    }
-                    printf("\n");
-                    free(name);
-                    name = NULL;
-                    count = 0;
-                    closedir(dir);
-                }
+                ls(filename, i);
+                printf("\n");
             }
         }
         else
         {
-            DIR *dir;
-            if (filecount == 0)
-            {
-                char tmpd[100];
-                char *tmptmp = getcwd(tmpd, 100);
-                dir = opendir(tmpd);
-            }
-            else
-            {   
-                chdir(filename[0]);
-                char tmpd[100];
-                char *tmptmp = getcwd(tmpd, 100);
-                dir = opendir(tmpd);
-            }
-            struct fm *name = (struct fm *)malloc(10 * sizeof(struct fm));
-            int sz = 10;
-            int count = 0;
-            struct dirent *rnm;
-            while ((rnm = readdir(dir)) != NULL)
-            {
-                if (count == sz)
-                {
-                    int newn = 2 * sz;
-                    name = (struct fm *)realloc(name, newn * sizeof(struct fm));
-                    sz = newn;
-                }
-                name[count].file = *rnm;
-                stat(rnm->d_name, &name[count].stat);
-                count++;
-            }
-            if (mode['R'] == 0)
-            {
-                if (mode['t'] != 0)
-                {
-                    qsort(name, count, sizeof(struct fm), &sort_time);
-                }
-                else
-                {
-                    qsort(name, count, sizeof(struct fm), &sort1);
-                }
-                if (mode['l'] == 0)
-                {
-                    ls_normal(name, count);
-                }
-                else
-                {
-                    ls_l(name, count);
-                }
-            }
-            else
-            {
-                if (mode['t'] != 0)
-                {
-                    qsort(name, count, sizeof(struct fm), &sort_time);
-                }
-                else
-                {
-                    qsort(name, count, sizeof(struct fm), &sort1);
-                }
-                if (mode['l'] == 0)
-                {
-                    ls_R(name, count);
-                }
-                else
-                {
-                    ;
-                }
-            }
+            int i = 0;
+            ls(filename, i);
         }
     }
 }
