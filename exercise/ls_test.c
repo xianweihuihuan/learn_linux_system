@@ -10,7 +10,16 @@ int main(int argc, char *argv[])
     else
     {
         extern int optopt;
-        char **filename = (char **)calloc(_PC_PATH_MAX + 1, 100);
+        char **filename = (char **)malloc(100 * sizeof(char *));
+        for (int i = 0; i < 100; i++)
+        {
+            filename[i] = (char *)malloc(200);
+        }
+        char **filename1 = (char **)malloc(100 * sizeof(char *));
+        for (int i = 0; i < 100; i++)
+        {
+            filename1[i] = (char *)malloc(200);
+        }
         long filecount = 0;
         extern int mode[200];
         int tmp;
@@ -32,17 +41,21 @@ int main(int argc, char *argv[])
                 break;
             }
         }
+        char ori[200];
+        getcwd(ori, 200);
         tmp = 1;
         while (tmp < argc)
         {
             if (argv[tmp][0] != '-')
             {
-                // if(argv[tmp][0]!='/'){
-                //     realpath(argv[tmp],filename[filecount]);
-                // }else{
-                filename[filecount] = argv[tmp];
-                //}
+                strcpy(filename1[filecount], argv[tmp]);
+                chdir(argv[tmp]);
+                char ttmmpp[200];
+                getcwd(ttmmpp, 200);
+                printf("%s\n", ttmmpp);
+                strcpy(filename[filecount], ttmmpp);
                 filecount++;
+                chdir(ori);
             }
             tmp++;
         }
@@ -50,7 +63,7 @@ int main(int argc, char *argv[])
         {
             for (int i = 0; i < filecount; i++)
             {
-                printf("%s:\n", filename[i]);
+                printf("%s:\n", filename1[i]);
                 ls(filename, i);
                 printf("\n");
             }
