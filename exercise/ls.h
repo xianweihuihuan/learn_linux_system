@@ -25,7 +25,7 @@ typedef struct stack
     int alloc;
     int sz;
 } stack;
-
+int sort1(const void *a, const void *b);
 void stackinit(stack*st);
 void boarden(stack *st);
 void stackpush(stack *st, const char *file);
