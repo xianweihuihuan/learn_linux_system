@@ -44,7 +44,6 @@ void stackdestory(stack *st)
     {
         free(st->file[i]);
     }
-    free(st);
 }
 int sort1(const void *a, const void *b)
 {
@@ -239,6 +238,7 @@ void ls_n()
         printf("\n");
     }
     free(name);
+    closedir(dir);
 }
 void ls_m(char *filename, char *filename1)
 {
@@ -380,114 +380,21 @@ void ls_m(char *filename, char *filename1)
         printf("\n");
     }
     free(name);
+    closedir(dir);
 }
 
 void ls_Rn()
 {
-    printf(".:\n");
-    ls_n();
-    stack st;
-    stackinit(&st);
-    char tmp[200];
-    getcwd(tmp, 200);
-    DIR *dir;
-    dir = opendir(tmp);
-    fm *name = (fm *)malloc(10 * sizeof(fm));
-    struct dirent *rnm;
-    int alloc = 10;
-    int sz = 0;
-    while ((rnm = readdir(dir)) != NULL)
-    {
-        if (sz == alloc)
-        {
-            int newn = 2 * alloc;
-            name = (fm *)realloc(name, newn * sizeof(fm));
-            alloc = newn;
-        }
-        name[sz].file = *rnm;
-        stat(rnm->d_name, &name[sz].stat);
-        sz++;
+    while(1){
+        char ori[200];
+        getcwd(ori,200);
+        ls_m(ori,ori);
     }
-    if (mode['t'] != 0)
-    {
-        qsort(name, sz, sizeof(struct fm), &sort_time);
-    }
-    else
-    {
-        qsort(name, sz, sizeof(struct fm), &sort1);
-    }
-    for (int i = sz - 1; i >= 0; i--)
-    {
-        if (mode['a'] == 0 && name[i].file.d_name[0] == '.')
-        {
-            continue;
-        }
-        if (name[i].file.d_type == 4)
-        {
-            chdir(name[i].file.d_name);
-            char tptm[200];
-            getcwd(tptm, 200);
-            stackpush(&st, tptm);
-            chdir(tmp);
-        }
-    }
-    free(name);
-    while (!(stackempty(&st)))
-    {
-        chdir(stacktop(&st));
-        char pp[200];
-        getcwd(pp, 200);
-        ls_m(pp, pp);
-        DIR *DIr;
-        DIr = opendir(pp);
-        fm *name = (fm *)malloc(10 * sizeof(fm));
-        alloc = 10;
-        sz = 0;
-        stackpop(&st);
-        while ((rnm = readdir(DIr)) != NULL)
-        {
-            if (sz == alloc)
-            {
-                int newn = 2 * alloc;
-                name = (fm *)realloc(name, newn * sizeof(fm));
-                alloc = newn;
-            }
-            name[sz].file = *rnm;
-            stat(rnm->d_name, &name[sz].stat);
-            sz++;
-        }
-        if (mode['t'] != 0)
-        {
-            qsort(name, sz, sizeof(struct fm), &sort_time);
-        }
-        else
-        {
-            qsort(name, sz, sizeof(struct fm), &sort1);
-        }
-        for (int i = sz; i >= 1; i--)
-        {
-
-            if (mode['a'] == 0 && name[i - 1].file.d_name[0] == '.')
-            {
-                continue;
-            }
-            if (name[i - 1].file.d_type == 4)
-            {
-                chdir(name[i - 1].file.d_name);
-                char tptm[200];
-                getcwd(tptm, 200);
-                stackpush(&st, tptm);
-                chdir(tmp);
-            }
-        }
-        free(name);
-    }
-    stackdestory(&st);
 }
 
-void ls_Rm(char*filename,char*filename1){
-    printf("%s:\n", filename1);
-    ls_m(filename,filename1);
+void ls_Rm(char *filename, char *filename1)
+{
+    ls_m(filename, filename1);
     stack st;
     stackinit(&st);
     chdir(filename);
@@ -519,7 +426,11 @@ void ls_Rm(char*filename,char*filename1){
     }
     for (int i = sz - 1; i >= 0; i--)
     {
-        if (mode['a'] == 0 && name[i].file.d_name[0] == '.')
+        if (strcmp(name[i].file.d_name, ".") == 0 || strcmp(name[i].file.d_name, "..") == 0)
+        {
+            continue;
+        }
+        if (name[i].file.d_type == 10)
         {
             continue;
         }
@@ -533,6 +444,7 @@ void ls_Rm(char*filename,char*filename1){
         }
     }
     free(name);
+    closedir(dir);
     while (!(stackempty(&st)))
     {
         chdir(stacktop(&st));
@@ -566,10 +478,14 @@ void ls_Rm(char*filename,char*filename1){
             qsort(name, sz, sizeof(struct fm), &sort1);
         }
 
-        for (int i = sz-1; i >= 0; i--)
+        for (int i = sz - 1; i >= 0; i--)
         {
 
-            if (mode['a'] == 0 && name[i].file.d_name[0] == '.')
+            if (strcmp(name[i].file.d_name, ".") == 0 || strcmp(name[i].file.d_name, "..") == 0)
+            {
+                continue;
+            }
+            if (name[i].file.d_type == 10)
             {
                 continue;
             }
@@ -579,9 +495,11 @@ void ls_Rm(char*filename,char*filename1){
                 char tptm[200];
                 getcwd(tptm, 200);
                 stackpush(&st, tptm);
-                
+                chdir(pp);
             }
         }
+        closedir(DIr);
         free(name);
     }
+    stackdestory(&st);
 }
