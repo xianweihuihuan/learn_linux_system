@@ -67,10 +67,40 @@ int main(int argc, char *argv[])
         if(filecount==0){
             ls_Rn();
         }else{
-            int i =0;
-            //for(int i = 0;i<filecount;i++){
+            for(int i = 0;i<filecount;i++){
                 ls_Rm(filename[i],filename1[i]);
-            //}
+            }
         }
     }
 }
+
+/*int main()
+{
+    
+    char tmp[200];
+    getcwd(tmp, 200);
+    DIR *dir = opendir(tmp);
+    struct dirent *rnm;
+    struct dirent name[200];
+    int i = 0;
+    while ((rnm = readdir(dir)) != NULL)
+    {
+        name[i] = *rnm;
+        i++;
+        if (rnm->d_type == 4)
+        {
+            break;
+        }
+    }
+    for(int j = 0;j<i;j++){
+        printf("%s\n",name[j].d_name);
+    }
+    qsort(name,i,sizeof(struct dirent),&sort1);
+    DIR*fff = opendir(name[i-1].d_name);
+    struct dirent* nnn = readdir(fff);
+    printf("%s\n111\n",nnn->d_name);
+    rnm = readdir(dir);
+    name[i++] = *rnm;
+    printf("111111111111111111111111111\n");
+    printf("%s\n",name[i-1].d_name);
+}*/
