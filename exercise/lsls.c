@@ -6,12 +6,7 @@ int main(int argc, char *argv[])
     char **filename = (char **)malloc(100 * sizeof(char *));
     for (int i = 0; i < 100; i++)
     {
-        filename[i] = (char *)malloc(200);
-    }
-    char **filename1 = (char **)malloc(100 * sizeof(char *));
-    for (int i = 0; i < 100; i++)
-    {
-        filename1[i] = (char *)malloc(200);
+        filename[i] = (char *)malloc(MAX_PATH);
     }
     long filecount = 0;
     extern int mode[200];
@@ -31,7 +26,7 @@ int main(int argc, char *argv[])
             break;
         case '?':
             printf("没有这个选项：-%c\n", optopt);
-            break;
+            exit(EXIT_FAILURE);
         }
     }
     char ori[200];
@@ -41,66 +36,53 @@ int main(int argc, char *argv[])
     {
         if (argv[tmp][0] != '-')
         {
-            strcpy(filename1[filecount], argv[tmp]);
             chdir(argv[tmp]);
             char ttmmpp[200];
-            getcwd(ttmmpp, 200);
+            char *iii = getcwd(ttmmpp, 200);
+            if (iii == NULL)
+            {
+                perror("obtain pwd failed");
+                exit(EXIT_FAILURE);
+            }
             strcpy(filename[filecount], ttmmpp);
             filecount++;
-            chdir(ori);
+            int o = chdir(ori);
+            if (o == -1)
+            {
+                perror("failed chdir");
+                exit(EXIT_FAILURE);
+            }
         }
         tmp++;
     }
-    if (mode['R'] == 0)
+    if (filecount == 0)
     {
-        if (filecount == 0)
+        char ori[MAX_PATH];
+        char *rt = getcwd(ori, MAX_PATH);
+        if (rt == NULL)
         {
-            ls_n();
+            perror("obtain pwd failed");
+            exit(EXIT_FAILURE);
         }
-        else
+        ls(ori);
+    }
+    else
+    {
+        for (int i = 0; i < filecount; i++)
         {
-            for(int i = 0;i<filecount;i++){
-                ls_m(filename[i],filename1[i]);
+            int u = chdir(filename[i]);
+            if (u == -1)
+            {
+                perror("failed chdir");
+                exit(EXIT_FAILURE);
             }
-        }
-    }else{
-        if(filecount==0){
-            ls_Rn();
-        }else{
-            for(int i = 0;i<filecount;i++){
-                ls_Rm(filename[i],filename1[i]);
-            }
+            printf("%s:\n", filename[i]);
+            ls(filename[i]);
         }
     }
+    for (int i = 0; i < 100; i++)
+    {
+        free(filename[i]);
+    }
+    free(filename);
 }
-
-/*int main()
-{
-    
-    char tmp[200];
-    getcwd(tmp, 200);
-    DIR *dir = opendir(tmp);
-    struct dirent *rnm;
-    struct dirent name[200];
-    int i = 0;
-    while ((rnm = readdir(dir)) != NULL)
-    {
-        name[i] = *rnm;
-        i++;
-        if (rnm->d_type == 4)
-        {
-            break;
-        }
-    }
-    for(int j = 0;j<i;j++){
-        printf("%s\n",name[j].d_name);
-    }
-    qsort(name,i,sizeof(struct dirent),&sort1);
-    DIR*fff = opendir(name[i-1].d_name);
-    struct dirent* nnn = readdir(fff);
-    printf("%s\n111\n",nnn->d_name);
-    rnm = readdir(dir);
-    name[i++] = *rnm;
-    printf("111111111111111111111111111\n");
-    printf("%s\n",name[i-1].d_name);
-}*/
