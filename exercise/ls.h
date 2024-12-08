@@ -13,26 +13,15 @@
 #include <limits.h>
 #include <stdbool.h>
 #define N_BITS 3
-
+#define MAX_PATH 1000
+#define Tail "\033[m"
+#define Cyan "\033[0m\033[1;36m"
+#define Yellow "\033[0m\033[1;33m"
+#define Green "\033[0m\033[1;32m"
 typedef struct fm
 {
     struct dirent file;
     struct stat stat;
-}fm;
-typedef struct stack
-{
-    char **file;
-    int alloc;
-    int sz;
-} stack;
+} fm;
 int sort1(const void *a, const void *b);
-void stackinit(stack*st);
-void boarden(stack *st);
-void stackpush(stack *st, const char *file);
-void stackpop(stack *st);
-bool stackempty(stack *st);
-char* stacktop(stack*st);
-void ls_n();
-void ls_m(char* filename,char*filename1);
-void ls_Rn();
-void ls_Rm(char* filename,char*filename1);
+void ls(char *filename);
