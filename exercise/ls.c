@@ -50,9 +50,14 @@ int sort_time(const void *a, const void *b)
     struct fm *tmp2 = (struct fm *)b;
     return ((tmp2->stat.st_mtime) - (tmp1->stat.st_mtime)) * flag;
 }
-void ls(char *filename)
+void ls(char *dirname)
 {
-    DIR *dir = opendir(filename);
+    int op  = chdir(dirname);
+    if(op==-1){
+        perror("failed,chdir");
+        exit(EXIT_FAILURE);
+    }
+    DIR *dir = opendir(dirname);
     if (dir == NULL)
     {
         perror("open this dir failed");
@@ -62,8 +67,9 @@ void ls(char *filename)
     fm *name = (fm *)malloc(10 * sizeof(fm));
     if (name == NULL)
     {
+        closedir(dir);
         perror("malloc failed");
-        exit(EXIT_SUCCESS);
+        exit(EXIT_FAILURE);
     }
     int alloc = 10;
     int sz = 0;
@@ -75,17 +81,26 @@ void ls(char *filename)
             fm *jj = (fm *)realloc(name, newn * sizeof(fm));
             if (jj == NULL)
             {
+                free(name);
+                closedir(dir);
                 perror("realloc failed");
                 exit(EXIT_FAILURE);
             }
             name = jj;
             alloc = newn;
         }
+        if((access(rnm->d_name,R_OK))==-1){
+            char path[MAX_PATH];
+            sprintf(path,"%s/%s",dirname,rnm->d_name);
+            printf("没有本文件的权限:%s\n",path);
+            continue;
+        }
         name[sz].file = *rnm;
-        int k = lstat(name[sz].file.d_name, &name[sz].stat);
-        if (k == -1)
-        {
-            perror("obtain failed");
+        int k = lstat(rnm->d_name,&name[sz].stat);
+        if(k==-1){
+            free(name);
+            closedir(dir);
+            perror("obtain stat failed");
             exit(EXIT_FAILURE);
         }
         sz++;
@@ -191,10 +206,10 @@ void ls(char *filename)
             }
             printf(" ");
             printf("%ld ", name[i].stat.st_nlink);
-            struct passwd *aaa = getpwuid(name[i].stat.st_uid);
-            printf("%s ", aaa->pw_name);
-            struct group *bbb = getgrgid(name[i].stat.st_gid);
-            printf("%s ", bbb->gr_name);
+             //struct passwd* aaa = getpwuid(name[i].stat.st_uid);
+             //printf("%s ", aaa->pw_name);
+            //struct group *bbb = getgrgid(name[i].stat.st_gid);
+             //printf("%s ", bbb->gr_name);
             printf("%10ld ", name[i].stat.st_size);
             struct tm *ccc = localtime(&(name[i].stat.st_mtime));
             printf("%2d月 %2d %-2d:%-2d ", ccc->tm_mon + 1, ccc->tm_mday, ccc->tm_hour, ccc->tm_min);
@@ -227,19 +242,18 @@ void ls(char *filename)
             }
             if (S_ISDIR(name[i].stat.st_mode))
             {
-
+                int lo = strlen(dirname);
                 char path[MAX_PATH];
-                snprintf(path, MAX_PATH, "%s/%s", filename, name[i].file.d_name);
-                printf("%s:\n", path);
-                int lss = chdir(path);
-                if (lss == -1)
-                {
-                    perror("failed chdir");
-                    exit(EXIT_FAILURE);
+                if(dirname[lo-1]!='/'){
+                    snprintf(path, MAX_PATH, "%s/%s", dirname, name[i].file.d_name);
+                }else{
+                    snprintf(path, MAX_PATH, "%s%s", dirname, name[i].file.d_name);
                 }
+                printf("%s:\n", path);
                 ls(path);
             }
         }
+        
     }
     free(name);
     closedir(dir);
