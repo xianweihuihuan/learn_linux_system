@@ -36,46 +36,25 @@ int main(int argc, char *argv[])
     {
         if (argv[tmp][0] != '-')
         {
-            chdir(argv[tmp]);
-            char ttmmpp[200];
-            char *iii = getcwd(ttmmpp, 200);
-            if (iii == NULL)
-            {
-                perror("obtain pwd failed");
-                exit(EXIT_FAILURE);
-            }
-            strcpy(filename[filecount], ttmmpp);
-            filecount++;
-            int o = chdir(ori);
-            if (o == -1)
-            {
-                perror("failed chdir");
-                exit(EXIT_FAILURE);
+            if(argv[tmp][0]=='/'){
+                strcpy(filename[filecount],argv[tmp]);
+                filecount++;
+            }else{
+                snprintf(filename[filecount],MAX_PATH,"%s/%s",ori,argv[tmp]);
+                filecount++;    
             }
         }
         tmp++;
     }
     if (filecount == 0)
     {
-        char ori[MAX_PATH];
-        char *rt = getcwd(ori, MAX_PATH);
-        if (rt == NULL)
-        {
-            perror("obtain pwd failed");
-            exit(EXIT_FAILURE);
-        }
-        ls(ori);
+        ls(".");
     }
     else
     {
         for (int i = 0; i < filecount; i++)
-        {
-            int u = chdir(filename[i]);
-            if (u == -1)
-            {
-                perror("failed chdir");
-                exit(EXIT_FAILURE);
-            }
+        {   
+
             printf("%s:\n", filename[i]);
             ls(filename[i]);
         }
