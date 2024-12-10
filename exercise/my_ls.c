@@ -10,7 +10,7 @@ void stackinit(stack *st)
 void boarden(stack *st)
 {
     int newn = (st->alloc == 0) ? 4 : st->alloc * 2;
-    st->file = (char **)realloc(st->file, sizeof(char *));
+    st->file = (char **)realloc(st->file, newn * sizeof(char *));
     st->alloc = newn;
     for (int i = st->sz; i < st->alloc; i++)
     {
@@ -33,6 +33,18 @@ void stackpop(stack *st)
 bool stackempty(stack *st)
 {
     return (st->sz == 0);
+}
+char *stacktop(stack *st)
+{
+    return st->file[st->sz - 1];
+}
+void stackdestory(stack *st)
+{
+    for (int i = 0; i < st->alloc; i++)
+    {
+        free(st->file[i]);
+    }
+    free(st);
 }
 int sort1(const void *a, const void *b)
 {
@@ -294,15 +306,22 @@ void ls_l(struct fm *name, long count)
 }
 void ls_R(struct fm *name, long count)
 {
-    ;
+    ls_normal(name, count);
 }
-void ls(char **filename, int i)
+void ls(char **filename, char **filename1, int i, long filecount)
 {
+    if (filecount>1)
+    {
+        printf("%s:\n", filename1[i]);
+    }
     DIR *dir;
-    chdir(filename[i]);
-    char tmpd[100];
-    char *tmptmp = getcwd(tmpd, 100);
-    dir = opendir(tmpd);
+    if (filecount != 0)
+    {
+        chdir(filename[i]);
+    }
+    char ttmmoo[200];
+    getcwd(ttmmoo,200);
+    dir = opendir(ttmmoo);
     struct fm *name = (struct fm *)malloc(10 * sizeof(struct fm));
     int sz = 10;
     int count = 0;
@@ -350,6 +369,10 @@ void ls(char **filename, int i)
         }
         if (mode['l'] == 0)
         {
+            if (filecount == 0)
+            {
+                printf(".:\n");
+            }
             ls_R(name, count);
         }
         else
