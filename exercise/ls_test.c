@@ -52,7 +52,6 @@ int main(int argc, char *argv[])
                 chdir(argv[tmp]);
                 char ttmmpp[200];
                 getcwd(ttmmpp, 200);
-                printf("%s\n", ttmmpp);
                 strcpy(filename[filecount], ttmmpp);
                 filecount++;
                 chdir(ori);
@@ -63,15 +62,21 @@ int main(int argc, char *argv[])
         {
             for (int i = 0; i < filecount; i++)
             {
-                printf("%s:\n", filename1[i]);
-                ls(filename, i);
+                ls(filename,filename1, i,filecount);
                 printf("\n");
             }
         }
         else
         {
             int i = 0;
-            ls(filename, i);
+            ls(filename, filename1,i,filecount);
         }
+        for(int i = 0;i<100;i++){
+            free(filename[i]);
+            free(filename1[i]);
+        }
+        free(filename1);
+        free(filename);
     }
 }
+
