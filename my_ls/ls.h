@@ -24,4 +24,4 @@ typedef struct fm
     struct stat stat;
 } fm;
 int sort1(const void *a, const void *b);
-void ls(char *filename);
+void ls(const char *filename);
