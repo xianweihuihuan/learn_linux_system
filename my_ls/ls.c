@@ -53,8 +53,9 @@ int sort_time(const void *a, const void *b)
 void ls(const char *dirname)
 {
     int k = chdir(dirname);
-    if(k==-1){
-        printf("failed chdir %s",dirname);
+    if (k == -1)
+    {
+        printf("failed chdir %s", dirname);
         return;
     }
     DIR *dir = opendir(dirname);
@@ -75,10 +76,12 @@ void ls(const char *dirname)
     int sz = 0;
     while ((rnm = readdir(dir)) != NULL)
     {
-        if(sz==alloc){
-            int newn = 2*alloc;
-            fm* ff = (fm*)realloc(name,sizeof(fm)*newn);
-            if(ff==NULL){
+        if (sz == alloc)
+        {
+            int newn = 2 * alloc;
+            fm *ff = (fm *)realloc(name, sizeof(fm) * newn);
+            if (ff == NULL)
+            {
                 perror("realloc failed");
                 free(name);
                 closedir(dir);
@@ -89,8 +92,17 @@ void ls(const char *dirname)
         }
         if (access(rnm->d_name, R_OK) == -1)
         {
+            int lo = strlen(dirname);
             char path[1000];
-            snprintf(path,1000, "%s/%s", dirname, rnm->d_name);
+            if (dirname[lo - 1] != '/')
+            {
+                sprintf(path, "%s/%s", dirname, rnm->d_name);
+            }
+            else
+            {
+                sprintf(path, "%s%s", dirname, rnm->d_name);
+            }
+
             printf("没有该文件权限：%s\n", path);
             continue;
         }
@@ -100,7 +112,7 @@ void ls(const char *dirname)
         name[sz].file.d_reclen = rnm->d_reclen;
         name[sz].file.d_type = rnm->d_type;
         char filen[1000];
-        snprintf(filen, 1000,"%s/%s", dirname, rnm->d_name);
+        snprintf(filen, 1000, "%s/%s", dirname, rnm->d_name);
         int k = lstat(filen, &name[sz].stat);
         if (k == -1)
         {
@@ -222,12 +234,12 @@ void ls(const char *dirname)
             printf(" ");
             printf("%ld ", name[i].stat.st_nlink);
             struct passwd *aaa = getpwuid(name[i].stat.st_uid);
-            printf("%s ", aaa->pw_name);
+            printf("%-10s ", aaa->pw_name);
             struct group *bbb = getgrgid(name[i].stat.st_gid);
-            printf("%s ", bbb->gr_name);
+            printf("%-10s ", bbb->gr_name);
             printf("%10ld ", name[i].stat.st_size);
             struct tm *ccc = localtime(&(name[i].stat.st_mtime));
-            printf("%2d月 %2d %-2d:%-2d ", ccc->tm_mon + 1, ccc->tm_mday, ccc->tm_hour, ccc->tm_min);
+            printf("%d年 %2d月 %2d日 %02d:%02d ", ccc->tm_yday + 1679, ccc->tm_mon + 1, ccc->tm_mday, ccc->tm_hour, ccc->tm_min);
             if (S_ISDIR(name[i].stat.st_mode))
             {
                 printf(Cyan "%-20s" Tail "\n", name[i].file.d_name);
