@@ -6,24 +6,18 @@ int main(int argc, char *argv[])
     char filename[10][200];
     long filecount = 0;
     extern int mode[200];
-    int tmp;
-    while ((tmp = getopt(argc, argv, "alRtris::")) != EOF)
+    int tmp = 1;
+    while (tmp < argc)
     {
-        switch (tmp)
+        if (argv[tmp][0] == '-')
         {
-        case 'a':
-        case 'l':
-        case 'R':
-        case 't':
-        case 'r':
-        case 'i':
-        case 's':
-            mode[tmp]++;
-            break;
-        default:
-            printf("没有这个选项：-%c\n", optopt);
-            exit(EXIT_FAILURE);
+            int len = strlen(argv[tmp]);
+            for (int i = 1; i < len; i++)
+            {
+                mode[argv[tmp][i]]++;
+            }
         }
+        tmp++;
     }
     char ori[200];
     char *ttt = getcwd(ori, 200);
