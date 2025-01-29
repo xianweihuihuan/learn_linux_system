@@ -201,7 +201,7 @@ int buildCommand(char *_argv[], int _argc)
 int main()
 {
     while(!quit){
-        // 1.
+        // 1.5
         rdirfilename = NULL;
         rdir = NONE;
         // 2. 交互问题,获取命令行, ls -a -l > myfile / ls -a -l >> myfile / cat < file.txt
