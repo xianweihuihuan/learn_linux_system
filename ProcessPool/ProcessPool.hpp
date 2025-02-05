@@ -162,7 +162,7 @@ public:
                 }
                 std::cout << "子进程[" << getpid() << "]收到一个任务码: " << code << std::endl;
                 _tm.Execute(code);
-                        }
+            }
             else if (sz == 0)
             {
                 std::cout << "父进程退出" << std::endl;
