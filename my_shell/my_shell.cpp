@@ -10,7 +10,8 @@ bool outred = false;
 bool appendred = false;
 char* fifocommand[100];
 int fifosz = 0;
-
+char* g_argv[100];
+int g_args;
 
 
 void Env_Init()
@@ -146,17 +147,70 @@ void fifotest(){
 }
 
 void check(char* in){
-    g_envs = 0;
-    g_env[g_envs++] = strtok(in," ");
-    while((bool)(g_env[g_envs++] = strtok(nullptr," ")));
-    g_envs--;
+    g_args = 0;
+    g_argv[g_args++] = strtok(in," ");
+    while((bool)(g_argv[g_args++] = strtok(nullptr," ")));
+    g_args--;
 }
 
-void checktest(){
-    for(int i = 0;i<fifosz;i++){
-        check(fifocommand[i]);
-        for(int j = 0;j<g_envs;j++){
-            std::cout<<g_env[j]<<std::endl;
+// void checktest(){
+//     for(int i = 0;i<fifosz;i++){
+//         check(fifocommand[i]);
+//         for(int j = 0;j<g_envs;j++){
+//             std::cout<<g_env[j]<<std::endl;
+//         }
+//     }
+// }
+bool my_cd(){
+    if(g_args == 1){
+        perror("输入的参数太少");
+        return false;
+    }
+    if(g_args > 2){
+        perror("输入的参数太多");
+        return false;
+    }
+    char pwd[100];
+    char* tmp = getcwd(pwd,sizeof(pwd));
+    if(tmp==nullptr){
+        perror("获取当前路径失败");
+        return false;
+    }
+    if(strncmp(g_argv[1],"-",1)==0){
+        //std::cout<<"-"<<std::endl;
+        char* oldpwd = getenv("OLDPWD");
+        std::cout<<oldpwd;
+        if(oldpwd == nullptr){
+            perror("找不到上次目录");
+            return false;
+        }
+        int num = chdir(oldpwd);
+        if(num == -1){
+            perror("进入上次目录失败");
+            return false;
+        }
+    }else{
+        int num = chdir(g_argv[1]);
+        if(num == -1){
+            perror("进入该目录失败");
+            return false;
         }
     }
+    setenv("OLDPWD",pwd,1);
+    return true;
 }
+
+bool checkselfexcute(){
+    if(strstr(fifocommand[0],"cd")){
+        if(fifosz != 1){
+            perror("操作错误");
+            return false;
+        }
+        check(fifocommand[0]);
+        my_cd();
+        //std::cout<<"my_cd"<<std::endl;
+    }
+    return true;
+}
+
+
