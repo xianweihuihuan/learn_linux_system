@@ -149,19 +149,19 @@ void fifotest(){
 void check(char* in){
     g_args = 0;
     g_argv[g_args++] = strtok(in," ");
-    while((bool)(g_argv[g_args++] = strtok(nullptr," ")));
+    while((bool)(g_argv[g_args++] = strtok(NULL," ")));
     g_args--;
 }
 
-// void checktest(){
-//     for(int i = 0;i<fifosz;i++){
-//         check(fifocommand[i]);
-//         for(int j = 0;j<g_envs;j++){
-//             std::cout<<g_env[j]<<std::endl;
-//         }
-//     }
-// }
-bool my_cd(){
+void checktest(){
+    for(int i = 0;i<fifosz;i++){
+        check(fifocommand[i]);
+        for(int j = 0;j<g_envs;j++){
+            std::cout<<g_env[j]<<std::endl;
+        }
+    }
+}
+bool my_cd(char* dir){
     if(g_args == 1){
         perror("输入的参数太少");
         return false;
@@ -176,10 +176,10 @@ bool my_cd(){
         perror("获取当前路径失败");
         return false;
     }
-    if(strncmp(g_argv[1],"-",1)==0){
-        //std::cout<<"-"<<std::endl;
+    if(strcmp(dir,"-")==0){
+        
         char* oldpwd = getenv("OLDPWD");
-        std::cout<<oldpwd;
+        //std::cout<<oldpwd;
         if(oldpwd == nullptr){
             perror("找不到上次目录");
             return false;
@@ -190,7 +190,8 @@ bool my_cd(){
             return false;
         }
     }else{
-        int num = chdir(g_argv[1]);
+        printf("%s",dir);
+        int num = chdir(dir);
         if(num == -1){
             perror("进入该目录失败");
             return false;
@@ -207,10 +208,41 @@ bool checkselfexcute(){
             return false;
         }
         check(fifocommand[0]);
-        my_cd();
+        my_cd(g_argv[1]);
         //std::cout<<"my_cd"<<std::endl;
     }
     return true;
 }
 
+void excute(){
+    int pid = fork();
+    if(pid == 0){
+        _excute(0);
+    }else{
+        waitpid(pid,NULL,0);
+    }
+}
 
+void _excute(int sz){
+    if(sz == fifosz -1){
+
+    }else{
+        int fd[2] = {0};
+        int tmp = pipe(fd);
+        if(tmp == -1){
+
+        }
+        pid_t id = fork();
+        if(id == 0){
+            close(fd[0]);
+            dup2(fd[1],1);
+            check(fifocommand[sz]);
+            execvp(g_argv[0],g_argv);
+        }else{
+            close(fd[1]);
+            dup2(fd[0],0);
+            waitpid(id,NULL,0);
+            _excute(++sz);
+        }
+    }
+}
