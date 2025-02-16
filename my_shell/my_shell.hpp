@@ -27,3 +27,4 @@ void fifotest();
 void check(char* in);
 void checktest();
 bool checkselfexcute();
+void excute();
