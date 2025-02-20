@@ -73,6 +73,18 @@ bool getcommand(char* in, size_t sz)
     {
         return false;
     }
+    int i = 0;
+    in[strlen(in)-1] = '\0';
+    while(in[i] == ' '&&i < strlen(in)){
+        for(int j = 0;j < strlen(in);j++){
+            in[j] = in[j+1];
+        }
+        //printf("%s\n",in);    
+    } 
+    //printf("%d\n",strlen(in));
+    if(strlen(in)==0){
+        return false;
+    }
     return true;
 }
 
@@ -161,39 +173,51 @@ void checktest(){
         }
     }
 }
-bool my_cd(char* dir){
-    if(g_args == 1){
-        perror("输入的参数太少");
-        return false;
-    }
+
+bool my_cd(){
     if(g_args > 2){
-        perror("输入的参数太多");
+        printf("输入的参数太多\n");
         return false;
     }
+    char* dir = g_argv[1];
     char pwd[100];
     char* tmp = getcwd(pwd,sizeof(pwd));
     if(tmp==nullptr){
-        perror("获取当前路径失败");
+        printf("获取当前路径失败\n");
         return false;
     }
-    if(strcmp(dir,"-")==0){
+    if(g_args == 1 || (strcmp(dir,"~") == 0)){
+        //printf("111111111111\n");
+        char* home = getenv("HOME");
+        //printf("111111111111\n");
+        if(home == nullptr){
+            printf("获取家目录失败\n");
+            return false;
+        }
+        int num = chdir(home);
+        if(num == -1){
+            printf("进入家目录失败\n");
+            return false;
+        }
+    }
+    else if(strcmp(dir,"-")==0){
         
         char* oldpwd = getenv("OLDPWD");
         //std::cout<<oldpwd;
         if(oldpwd == nullptr){
-            perror("找不到上次目录");
+            printf("找不到上次目录\n");
             return false;
         }
         int num = chdir(oldpwd);
         if(num == -1){
-            perror("进入上次目录失败");
+            printf("进入上次目录失败\n");
             return false;
         }
     }else{
-        printf("%s",dir);
+        //printf("%s",dir);
         int num = chdir(dir);
         if(num == -1){
-            perror("进入该目录失败");
+            printf("进入该目录失败\n");
             return false;
         }
     }
@@ -208,30 +232,29 @@ bool checkselfexcute(){
             return false;
         }
         check(fifocommand[0]);
-        my_cd(g_argv[1]);
+        //printf("1111111111111111\n");
+        //printf("%d\n",g_args);
+        my_cd();
         //std::cout<<"my_cd"<<std::endl;
+        return true;
     }
-    return true;
-}
-
-void excute(){
-    int pid = fork();
-    if(pid == 0){
-        _excute(0);
-    }else{
-        waitpid(pid,NULL,0);
-    }
+    return false;
 }
 
 void _excute(int sz){
-    if(sz == fifosz -1){
-
+    if(sz == fifosz - 1){
+        //printf("11111111111");
+        check(fifocommand[sz]);
+        execvp(g_argv[0],g_argv);
+        return;
     }else{
         int fd[2] = {0};
         int tmp = pipe(fd);
         if(tmp == -1){
-
+           printf("管道创建失败\n");
+           return;    
         }
+        //printf("111111111111111\n");
         pid_t id = fork();
         if(id == 0){
             close(fd[0]);
@@ -246,3 +269,37 @@ void _excute(int sz){
         }
     }
 }
+
+void dorefile(){
+    if(inred){
+        int num = open(infile.c_str(),O_RDONLY);
+        dup2(num,0);
+        close(num);
+        //printf("%s\n",infile.c_str());
+    }
+    if(outred){
+        int num = open(outfile.c_str(),O_WRONLY|O_CREAT|O_TRUNC,0644);
+        dup2(num,1);
+        close(num);
+        //printf("%s\n",outfile.c_str());
+    }else if(appendred){
+        int num = open(outfile.c_str(),O_APPEND|O_WRONLY|O_CREAT,0644);
+        dup2(num,1);
+        close(num);
+        //printf("%s\n",outfile.c_str());
+    }
+}
+
+void excute(){
+    int pid = fork();
+    //printf("111111111\n");
+    if(pid == 0){
+        //printf("111111111\n");
+        dorefile();
+        _excute(0);
+    }else{
+        //printf("1111111111111\n");
+        waitpid(pid,NULL,0);
+    }
+}
+
