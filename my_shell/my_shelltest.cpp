@@ -13,7 +13,8 @@ int main()
         {
             continue;
         }
-        if (strncmp(commandline, "quit",4)==0)
+        //printf("%s\n",commandline);
+        if (strcmp(commandline, "quit")==0)
         {
             break;
         }
@@ -23,10 +24,13 @@ int main()
         // checktest();
         if (checkselfexcute())
         {
+            //printf("1111111111\n");
             infile.clear();
             outfile.clear();
             continue;
         }
+        //printf("1111111111\n");
+        excute();
         infile.clear();
         outfile.clear();
     }
