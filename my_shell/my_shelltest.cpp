@@ -34,6 +34,7 @@ int main()
         infile.clear();
         outfile.clear();
     }
+    
     //     for(int i = 0;environ[i];i++){
     //         std::cout<<environ[i]<<std::endl;
     //     }
