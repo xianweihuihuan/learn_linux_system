@@ -16,7 +16,10 @@
 #define INPUT_REDIR 1
 #define OUTPUT_REDIR 2
 #define APPEND_REDIR 3
-
+#define Tail "\033[m"
+#define Cyan "\033[0m\033[1;36m"
+#define Yellow "\033[0m\033[1;33m"
+#define Green "\033[0m\033[1;32m"
 
 void Env_Init();
 void Print_commandline();
