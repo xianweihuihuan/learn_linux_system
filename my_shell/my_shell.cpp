@@ -14,24 +14,7 @@ char *g_argv[100];
 int g_args;
 bool back = false;
 
-void Env_Init()
-{
-    extern char **environ;
-    memset(g_env, 0, sizeof(g_env));
-    for (int i = 0; environ[i]; i++)
-    {
-        g_env[i] = (char *)malloc(strlen(environ[i]) + 1);
-        strcpy(g_env[i], environ[i]);
-        g_envs++;
-    }
-    g_env[g_envs++] = "HH";
-    g_env[g_envs] = nullptr;
-    for (int i = 0; g_env[i]; i++)
-    {
-        putenv(g_env[i]);
-    }
-    environ = g_env;
-}
+
 
 void Print_commandline()
 {
@@ -81,9 +64,7 @@ bool getcommand(char *in, size_t sz)
         {
             in[j] = in[j + 1];
         }
-        // printf("%s\n",in);
     }
-    // printf("%d\n",strlen(in));
     if (strlen(in) == 0)
     {
         return false;
@@ -122,7 +103,6 @@ void checkredir(char *in)
             Skip_space(in, end);
             inred = true;
             obtainrefile(infile, in, end);
-            // std::cout << infile << std::endl;
         }
         else if (in[end] == '>')
         {
@@ -135,10 +115,10 @@ void checkredir(char *in)
             {
                 outred = true;
             }
-            in[end++] = 0;
+            in[end] = ' ';
+            end++;
             Skip_space(in, end);
             obtainrefile(outfile, in, end);
-            // std::cout << outfile << std::endl;
         }
         else
         {
@@ -156,13 +136,7 @@ void checkfifo(char *in)
     fifosz--;
 }
 
-void fifotest(){
-    std::cout << fifosz << std::endl;
-    for (int i = 0; i < fifosz; i++)
-    {
-        std::cout << fifocommand[i] << std::endl;
-    }
-}
+
 
 void check(char *in)
 {
@@ -170,7 +144,6 @@ void check(char *in)
     {
         if (in[i] == '&')
         {
-            // printf("dwadwadwa\n");
             in[i] = ' ';
             back = true;
         }
@@ -182,21 +155,11 @@ void check(char *in)
     g_args--;
 }
 
-void checktest(){
-    for (int i = 0; i < fifosz; i++)
-    {
-        check(fifocommand[i]);
-        for (int j = 0; j < g_envs; j++)
-        {
-            std::cout << g_env[j] << std::endl;
-        }
-    }
-}
-
-bool my_cd(){
+bool my_cd()
+{
     if (g_args > 2)
     {
-        printf("输入的参数太多\n");
+        perror("too much parameter");
         return false;
     }
     char *dir = g_argv[1];
@@ -204,23 +167,21 @@ bool my_cd(){
     char *tmp = getcwd(pwd, sizeof(pwd));
     if (tmp == nullptr)
     {
-        printf("获取当前路径失败\n");
+        perror("get the current path fail");
         return false;
     }
     if (g_args == 1 || (strcmp(dir, "~") == 0))
     {
-        // printf("111111111111\n");
         char *home = getenv("HOME");
-        // printf("111111111111\n");
         if (home == nullptr)
         {
-            printf("获取家目录失败\n");
+            perror("get homedir fail");
             return false;
         }
         int num = chdir(home);
         if (num == -1)
         {
-            printf("进入家目录失败\n");
+            perror("chdir failed");
             return false;
         }
     }
@@ -228,26 +189,24 @@ bool my_cd(){
     {
 
         char *oldpwd = getenv("OLDPWD");
-        // std::cout<<oldpwd;
         if (oldpwd == nullptr)
         {
-            printf("找不到上次目录\n");
+            perror("get last pwd fail");
             return false;
         }
         int num = chdir(oldpwd);
         if (num == -1)
         {
-            printf("进入上次目录失败\n");
+            perror("chdir fail");
             return false;
         }
     }
     else
     {
-        // printf("%s",dir);
         int num = chdir(dir);
         if (num == -1)
         {
-            printf("进入该目录失败\n");
+            perror("chdir failed");
             return false;
         }
     }
@@ -255,7 +214,8 @@ bool my_cd(){
     return true;
 }
 
-bool checkselfexcute(){
+bool checkselfexcute()
+{
     if (strstr(fifocommand[0], "cd"))
     {
         if (fifosz != 1)
@@ -264,10 +224,7 @@ bool checkselfexcute(){
             return false;
         }
         check(fifocommand[0]);
-        // printf("1111111111111111\n");
-        // printf("%d\n",g_args);
         my_cd();
-        // std::cout<<"my_cd"<<std::endl;
         return true;
     }
     return false;
@@ -284,7 +241,12 @@ void _excute(int sz)
             int iid = fork();
             if (iid == 0)
             {
-                execvp(g_argv[0], g_argv);
+                int tmp = execvp(g_argv[0], g_argv);
+                if (tmp == -1)
+                {
+                    perror("invalid command");
+                    exit(EXIT_FAILURE);
+                }
             }
             else
             {
@@ -293,7 +255,12 @@ void _excute(int sz)
         }
         else
         {
-            execvp(g_argv[0], g_argv);
+            int tmp = execvp(g_argv[0], g_argv);
+            if (tmp == -1)
+            {
+                perror("invalid command");
+                exit(EXIT_FAILURE);
+            }
         }
         return;
     }
@@ -303,7 +270,7 @@ void _excute(int sz)
         int tmp = pipe(fd);
         if (tmp == -1)
         {
-            printf("管道创建失败\n");
+            perror("create pipe fail");
             return;
         }
         // printf("111111111111111\n");
@@ -318,7 +285,12 @@ void _excute(int sz)
                 int iid = fork();
                 if (iid == 0)
                 {
-                    execvp(g_argv[0], g_argv);
+                    int tmp = execvp(g_argv[0], g_argv);
+                    if (tmp == -1)
+                    {
+                        perror("invalid command");
+                        exit(EXIT_FAILURE);
+                    }
                 }
                 else
                 {
@@ -331,8 +303,13 @@ void _excute(int sz)
                 {
                     close(fd[0]);
                     dup2(fd[1], 1);
-                    check(fifocommand[sz]);
-                    execvp(g_argv[0], g_argv);
+                    // check(fifocommand[sz]);
+                    int tmp = execvp(g_argv[0], g_argv);
+                    if (tmp == -1)
+                    {
+                        perror("invalid command");
+                        exit(EXIT_FAILURE);
+                    }
                 }
                 else
                 {
@@ -360,38 +337,31 @@ void dorefile()
         int num = open(infile.c_str(), O_RDONLY);
         dup2(num, 0);
         close(num);
-        // printf("%s\n",infile.c_str());
     }
     if (outred)
     {
         int num = open(outfile.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
         dup2(num, 1);
         close(num);
-        // printf("%s\n",outfile.c_str());
     }
     else if (appendred)
     {
         int num = open(outfile.c_str(), O_APPEND | O_WRONLY | O_CREAT, 0644);
         dup2(num, 1);
         close(num);
-        // printf("%s\n",outfile.c_str());
     }
 }
 
 void excute()
 {
     int pid = fork();
-    // printf("111111111\n");
     if (pid == 0)
     {
-        // printf("111111111\n");
         dorefile();
         _excute(0);
     }
     else
     {
-        // printf("1111111111111\n");
         waitpid(pid, NULL, 0);
     }
 }
-
