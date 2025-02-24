@@ -5,6 +5,8 @@ int main()
     extern std::string infile;
     extern std::string outfile;
     //Env_Init();
+    signal(SIGINT, SIG_IGN);
+    std::cout<<Cyan<<"Welcome to user my shell"<<Tail<<std::endl;
     while (true)
     {
         Print_commandline();
@@ -14,7 +16,7 @@ int main()
             continue;
         }
         //printf("%s\n",commandline);
-        if (strcmp(commandline, "quit")==0)
+        if (strcmp(commandline, "exit")==0)
         {
             break;
         }
