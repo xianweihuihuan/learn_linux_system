@@ -42,9 +42,10 @@ namespace Xianwei
                     }
                     t = _tq.front();
                     _tq.pop();
-                    t(name);
                 }
+                t(name);
             }
+            
             LOG(INFO)<<"线程"<<name<<"退出";
         }
 
