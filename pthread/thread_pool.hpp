@@ -21,7 +21,7 @@ namespace Xianwei
             return _tq.empty();
         }
 
-        void task(const std::string &name)
+        void task()
         {
             ENABLE_FILE();
             while (true)
@@ -32,7 +32,6 @@ namespace Xianwei
                     while (IsEmpty() && _isrunning)
                     {
                         _waitnums++;
-                        LOG(INFO)<<"线程"<<name<<"进入等待";
                         _cd.wait(_lock);
                         _waitnums--;
                     }
@@ -43,10 +42,8 @@ namespace Xianwei
                     t = _tq.front();
                     _tq.pop();
                 }
-                t(name);
+                t();
             }
-            
-            LOG(INFO)<<"线程"<<name<<"退出";
         }
 
     public:
@@ -56,8 +53,7 @@ namespace Xianwei
             ENABLE_FILE();
             for (int i = 0; i < _num; i++)
             {
-                _thread.emplace_back(std::make_shared<pthread>(std::bind(&thread_pool::task, this, std::placeholders::_1)));
-                LOG(INFO)<<"构建了一个线程对象"<<_thread.back()->Getname()<<"...成功";
+                _thread.emplace_back(std::make_shared<pthread>(std::bind(&thread_pool::task, this)));
             }
         }
 
@@ -102,9 +98,7 @@ namespace Xianwei
             ENABLE_FILE();
             for (auto &x : _thread)
             {
-                
                 x->join();
-                LOG(INFO)<<"回收"<<x->Getname()<<"成功";
             }
         }
 

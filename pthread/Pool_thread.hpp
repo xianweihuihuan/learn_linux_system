@@ -16,19 +16,19 @@ namespace Xianwei
     };
     class pthread
     {
-        using func_t = std::function<void(const std::string& name)>;
+        using func_t = std::function<void()>;
 
     private:
         static void *done(void *arge)
         {
             pthread *p = static_cast<pthread *>(arge);
             p->_stat = RUNNING;
-            p->_func(p->Getname());
+            p->_func();
             return nullptr;
         }
 
     public:
-        static void in(const std::string& name)
+        static void in()
         {
             std::cout << "Not deliver a task" << std::endl;
         }
