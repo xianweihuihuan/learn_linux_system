@@ -59,7 +59,7 @@ namespace Xianwei
                     break;
                 default:
                     LOG(INFO) << "有事件就绪";
-                    Dispatcher();
+                    Dispatcher(n);
                     break;
                 }
             }
@@ -112,21 +112,21 @@ namespace Xianwei
                 }
                 close(fd);
             }
-            // else if (n < 0)
-            // {
-            //     LOG(ERROR) << "读取错误";
-            //     int m = epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, nullptr);
-            //     if (m < 0)
-            //     {
-            //         LOG(ERROR) << "epoll ctr error";
-            //         return;
-            //     }
-            //     close(fd);
-            // }
+            else if (n < 0)
+            {
+                LOG(ERROR) << "读取错误";
+                int m = epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, nullptr);
+                if (m < 0)
+                {
+                    LOG(ERROR) << "epoll ctr error";
+                    return;
+                }
+                close(fd);
+            }
         }
-        void Dispatcher()
+        void Dispatcher(int n)
         {
-            for (int i = 0; i < revs_num; i++)
+            for (int i = 0; i < n; i++)
             {
                 int fd = _revs[i].data.fd;
                 int event = _revs[i].events;
